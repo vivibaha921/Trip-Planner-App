@@ -72,7 +72,6 @@
                 type: 'International',
                 dates: '2026-05-15 to 2026-05-25',
                 budget: 3500,
-                estimatedBudget: 3500,
                 spent: 0,
                 hotel: 'Shibuya Excel Hotel',
                 hotelCost: 1200,
@@ -83,129 +82,6 @@
         ];
 
         let activeTab = 'overview';
-
-        // Budget estimation database (per person, per day averages)
-        const budgetEstimates = {
-            // Asia
-            'tokyo': { daily: 150, hotel: 120 },
-            'japan': { daily: 150, hotel: 120 },
-            'bangkok': { daily: 60, hotel: 40 },
-            'thailand': { daily: 60, hotel: 40 },
-            'singapore': { daily: 120, hotel: 100 },
-            'bali': { daily: 70, hotel: 50 },
-            'indonesia': { daily: 70, hotel: 50 },
-            'vietnam': { daily: 50, hotel: 35 },
-            'hanoi': { daily: 50, hotel: 35 },
-            'seoul': { daily: 100, hotel: 80 },
-            'korea': { daily: 100, hotel: 80 },
-            'hong kong': { daily: 130, hotel: 110 },
-            'beijing': { daily: 90, hotel: 70 },
-            'china': { daily: 90, hotel: 70 },
-            'india': { daily: 45, hotel: 30 },
-            'dubai': { daily: 180, hotel: 150 },
-            
-            // Europe
-            'paris': { daily: 180, hotel: 150 },
-            'france': { daily: 170, hotel: 140 },
-            'london': { daily: 200, hotel: 170 },
-            'england': { daily: 200, hotel: 170 },
-            'rome': { daily: 150, hotel: 120 },
-            'italy': { daily: 150, hotel: 120 },
-            'barcelona': { daily: 140, hotel: 110 },
-            'spain': { daily: 140, hotel: 110 },
-            'amsterdam': { daily: 160, hotel: 130 },
-            'netherlands': { daily: 160, hotel: 130 },
-            'berlin': { daily: 130, hotel: 100 },
-            'germany': { daily: 130, hotel: 100 },
-            'greece': { daily: 120, hotel: 90 },
-            'athens': { daily: 120, hotel: 90 },
-            'portugal': { daily: 110, hotel: 85 },
-            'lisbon': { daily: 110, hotel: 85 },
-            'switzerland': { daily: 250, hotel: 200 },
-            'iceland': { daily: 200, hotel: 160 },
-            
-            // North America
-            'new york': { daily: 220, hotel: 180 },
-            'los angeles': { daily: 200, hotel: 160 },
-            'san francisco': { daily: 210, hotel: 170 },
-            'miami': { daily: 180, hotel: 140 },
-            'las vegas': { daily: 170, hotel: 130 },
-            'chicago': { daily: 170, hotel: 130 },
-            'seattle': { daily: 180, hotel: 140 },
-            'boston': { daily: 190, hotel: 150 },
-            'washington': { daily: 180, hotel: 140 },
-            'toronto': { daily: 160, hotel: 130 },
-            'vancouver': { daily: 170, hotel: 140 },
-            'canada': { daily: 160, hotel: 130 },
-            'mexico': { daily: 80, hotel: 60 },
-            'cancun': { daily: 100, hotel: 80 },
-            
-            // South America
-            'brazil': { daily: 90, hotel: 70 },
-            'argentina': { daily: 85, hotel: 65 },
-            'peru': { daily: 70, hotel: 50 },
-            'chile': { daily: 100, hotel: 80 },
-            
-            // Oceania
-            'sydney': { daily: 180, hotel: 150 },
-            'australia': { daily: 180, hotel: 150 },
-            'new zealand': { daily: 160, hotel: 130 },
-            'fiji': { daily: 140, hotel: 110 },
-            
-            // Africa
-            'south africa': { daily: 90, hotel: 70 },
-            'morocco': { daily: 80, hotel: 60 },
-            'egypt': { daily: 70, hotel: 50 },
-            'kenya': { daily: 110, hotel: 85 },
-            
-            // Caribbean
-            'jamaica': { daily: 120, hotel: 90 },
-            'bahamas': { daily: 150, hotel: 120 },
-            'aruba': { daily: 140, hotel: 110 },
-            
-            // Default for unknown locations
-            'default': { daily: 120, hotel: 90 }
-        };
-
-        function estimateBudget(destination, dates) {
-            if (!destination || !dates) return null;
-
-            // Calculate trip duration
-            const daysMatch = dates.match(/(\d+)\s*day/i);
-            const dateRangeMatch = dates.match(/(\d{4}-\d{2}-\d{2})\s*to\s*(\d{4}-\d{2}-\d{2})/i);
-            
-            let days = 7; // default
-            if (daysMatch) {
-                days = parseInt(daysMatch[1]);
-            } else if (dateRangeMatch) {
-                const start = new Date(dateRangeMatch[1]);
-                const end = new Date(dateRangeMatch[2]);
-                days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-            }
-
-            // Find matching location
-            const destLower = destination.toLowerCase();
-            let estimate = budgetEstimates['default'];
-            
-            for (const [key, value] of Object.entries(budgetEstimates)) {
-                if (destLower.includes(key)) {
-                    estimate = value;
-                    break;
-                }
-            }
-
-            // Calculate total estimate
-            const totalDailyExpenses = estimate.daily * days;
-            const totalHotelCost = estimate.hotel * days;
-            const totalEstimate = Math.round(totalDailyExpenses + totalHotelCost);
-
-            return {
-                total: totalEstimate,
-                perDay: estimate.daily,
-                hotelPerNight: estimate.hotel,
-                days: days
-            };
-        }
 
         function saveTrips() {
             localStorage.setItem('trips', JSON.stringify(trips));
@@ -313,12 +189,6 @@
                             </div>
                             <p class="text-sm text-gray-600 mb-3">${trip.dates}</p>
                             <div class="space-y-2">
-                                ${trip.estimatedBudget ? `
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600">Estimated:</span>
-                                    <span class="font-semibold text-blue-600">$${trip.estimatedBudget.toLocaleString()}</span>
-                                </div>
-                                ` : ''}
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600">Budget:</span>
                                     <span class="font-semibold text-gray-800">$${trip.budget.toLocaleString()}</span>
@@ -340,57 +210,20 @@
             `;
         }
 
-        function updateBudgetEstimate() {
-            const destination = document.getElementById('newDestination').value;
-            const dates = document.getElementById('newDates').value;
-            const estimate = estimateBudget(destination, dates);
-            
-            const estimateDiv = document.getElementById('budgetEstimate');
-            if (estimate) {
-                estimateDiv.innerHTML = `
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h4 class="font-semibold text-blue-900 mb-2">💡 Estimated Budget</h4>
-                        <div class="space-y-1 text-sm text-blue-800">
-                            <p><strong>Total Estimate:</strong> $${estimate.total.toLocaleString()} for ${estimate.days} days</p>
-                            <p>Daily expenses: $${estimate.perDay}/day + Hotel: $${estimate.hotelPerNight}/night</p>
-                        </div>
-                        <button onclick="useBudgetEstimate(${estimate.total}, ${estimate.hotelPerNight * estimate.days})" 
-                            class="mt-3 text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
-                            Use This Estimate
-                        </button>
-                    </div>
-                `;
-            } else {
-                estimateDiv.innerHTML = '';
-            }
-        }
-
-        function useBudgetEstimate(budget, hotelCost) {
-            document.getElementById('newBudget').value = budget;
-            document.getElementById('newHotelCost').value = hotelCost;
-        }
-
         function renderAddNewForm(container) {
             container.innerHTML = `
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">Add New Trip</h2>
                 <div class="grid grid-cols-2 gap-4 mb-4">
-                    <input type="text" id="newDestination" placeholder="Destination" 
-                        oninput="updateBudgetEstimate()"
-                        class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <input type="text" id="newDestination" placeholder="Destination" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                     <select id="newType" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                         <option>Domestic</option>
                         <option>International</option>
                     </select>
-                    <input type="text" id="newDates" placeholder="Dates (e.g., 2026-06-01 to 2026-06-10)" 
-                        oninput="updateBudgetEstimate()"
-                        class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <input type="text" id="newDates" placeholder="Dates (e.g., 2026-06-01 to 2026-06-10)" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                     <input type="number" id="newBudget" placeholder="Total Budget ($)" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                     <input type="text" id="newHotel" placeholder="Hotel Name" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                     <input type="number" id="newHotelCost" placeholder="Hotel Cost ($)" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                 </div>
-                
-                <div id="budgetEstimate" class="mb-4"></div>
-                
                 <div class="grid grid-cols-1 gap-4 mb-4">
                     <textarea id="newActivities" placeholder="Things to Do (separated by commas)" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" rows="3"></textarea>
                     <textarea id="newRestaurants" placeholder="Restaurants (separated by commas)" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" rows="3"></textarea>
@@ -439,11 +272,6 @@
                             Budget
                         </h3>
                         <div class="space-y-4">
-                            ${trip.estimatedBudget ? `
-                            <div class="bg-blue-100 border border-blue-300 rounded-lg p-3">
-                                <p class="text-sm text-blue-800"><strong>Estimated Budget:</strong> $${trip.estimatedBudget.toLocaleString()}</p>
-                            </div>
-                            ` : ''}
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Total Budget</label>
                                 <div class="flex items-center gap-2">
@@ -489,3 +317,138 @@
                                     placeholder="Hotel name"
                                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                             </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Hotel Cost</label>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-500">$</span>
+                                    <input type="number" value="${trip.hotelCost}" 
+                                        onchange="updateTrip(${trip.id}, 'hotelCost', this.value)"
+                                        placeholder="Cost"
+                                        class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activities & Restaurants -->
+                <div class="space-y-6">
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            Things to Do
+                        </h3>
+                        <textarea onchange="updateTrip(${trip.id}, 'activities', this.value)"
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            rows="4">${trip.activities}</textarea>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            Restaurants
+                        </h3>
+                        <textarea onchange="updateTrip(${trip.id}, 'restaurants', this.value)"
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            rows="4">${trip.restaurants}</textarea>
+                    </div>
+
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                            </svg>
+                            Notes
+                        </h3>
+                        <textarea onchange="updateTrip(${trip.id}, 'notes', this.value)"
+                            class="w-full bg-transparent border border-yellow-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            rows="3">${trip.notes}</textarea>
+                    </div>
+                </div>
+            `;
+        }
+
+        function addTrip() {
+            const destination = document.getElementById('newDestination').value;
+            if (!destination) {
+                alert('Please enter a destination');
+                return;
+            }
+
+            const newTrip = {
+                id: Date.now(),
+                destination: destination,
+                type: document.getElementById('newType').value,
+                dates: document.getElementById('newDates').value,
+                budget: Number(document.getElementById('newBudget').value) || 0,
+                spent: 0,
+                hotel: document.getElementById('newHotel').value,
+                hotelCost: Number(document.getElementById('newHotelCost').value) || 0,
+                activities: document.getElementById('newActivities').value,
+                restaurants: document.getElementById('newRestaurants').value,
+                notes: document.getElementById('newNotes').value
+            };
+
+            trips.push(newTrip);
+            saveTrips();
+            activeTab = newTrip.id;
+            renderTabs();
+        }
+
+        function deleteTrip(id) {
+            if (confirm('Are you sure you want to delete this trip?')) {
+                trips = trips.filter(trip => trip.id !== id);
+                saveTrips();
+                activeTab = 'overview';
+                renderTabs();
+            }
+        }
+
+        function updateTrip(id, field, value) {
+            const trip = trips.find(t => t.id === id);
+            if (trip) {
+                if (field === 'budget' || field === 'spent' || field === 'hotelCost') {
+                    trip[field] = Number(value) || 0;
+                } else {
+                    trip[field] = value;
+                }
+                saveTrips();
+                renderTabs();
+            }
+        }
+
+        function exportToCSV() {
+            const headers = ['Destination', 'Type', 'Dates', 'Budget', 'Spent', 'Remaining', 'Hotel', 'Hotel Cost', 'Things to Do', 'Restaurants', 'Notes'];
+            const rows = trips.map(trip => [
+                trip.destination,
+                trip.type,
+                trip.dates,
+                trip.budget,
+                trip.spent,
+                trip.budget - trip.spent,
+                trip.hotel,
+                trip.hotelCost,
+                trip.activities,
+                trip.restaurants,
+                trip.notes
+            ]);
+            
+            const csv = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'trip_planner.csv';
+            a.click();
+        }
+
+        // Load trips on page load
+        loadTrips();
+    </script>
+</body>
+</html>
