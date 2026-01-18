@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Planning Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <h1 class="text-3xl font-bold text-gray-800">Trip Planning Tracker</h1>
+                </div>
+                <button onclick="exportToCSV()" class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    Export CSV
+                </button>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="bg-indigo-50 p-4 rounded-lg">
+                    <p class="text-sm text-indigo-600 font-semibold">Total Trips</p>
+                    <p id="totalTrips" class="text-2xl font-bold text-indigo-900">0</p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-sm text-blue-600 font-semibold">Total Budget</p>
+                    <p id="totalBudget" class="text-2xl font-bold text-blue-900">$0</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <p class="text-sm text-green-600 font-semibold">Remaining</p>
+                    <p id="totalRemaining" class="text-2xl font-bold text-green-900">$0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add New Trip Form -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Add New Trip
+            </h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <input type="text" id="newDestination" placeholder="Destination" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <select id="newType" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <option>Domestic</option>
+                    <option>International</option>
+                </select>
+                <input type="text" id="newDates" placeholder="Dates (e.g., 2026-06-01 to 2026-06-10)" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <input type="number" id="newBudget" placeholder="Total Budget ($)" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <input type="text" id="newHotel" placeholder="Hotel Name" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <input type="number" id="newHotelCost" placeholder="Hotel Cost ($)" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            </div>
+            <div class="grid grid-cols-1 gap-4 mb-4">
+                <textarea id="newActivities" placeholder="Things to Do (separated by commas)" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" rows="2"></textarea>
+                <textarea id="newRestaurants" placeholder="Restaurants (separated by commas)" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" rows="2"></textarea>
+                <textarea id="newNotes" placeholder="Notes" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" rows="2"></textarea>
+            </div>
+            <button onclick="addTrip()" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors font-semibold flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Add Trip
+            </button>
+        </div>
+
+        <!-- Trips List -->
+        <div id="tripsList" class="space-y-4"></div>
+    </div>
+
+    <script>
+        let trips = [
+            {
+                id: 1,
+                destination: 'Tokyo, Japan',
+                type: 'International',
+                dates: '2026-05-15 to 2026-05-25',
+                budget: 3500,
+                spent: 0,
+                hotel: 'Shibuya Excel Hotel',
+                hotelCost: 1200,
+                activities: 'Senso-ji Temple, TeamLab Borderless, Mt. Fuji day trip',
+                restaurants: 'Sukiyabashi Jiro, Ichiran Ramen, Tsukiji Market',
+                notes: 'Need to book JR Pass'
+            }
+        ];
+
+        function saveTrips() {
+            localStorage.setItem('trips', JSON.stringify(trips));
+        }
+
+        function loadTrips() {
+            const saved = localStorage.getItem('trips');
+            if (saved) {
+                trips = JSON.parse(saved);
+            }
+            renderTrips();
+        }
+
+        function updateSummary() {
+            const totalTrips = trips.length;
+            const totalBudget = trips.reduce((sum, trip) => sum + trip.budget, 0);
+            const totalSpent = trips.reduce((sum, trip) => sum + trip.spent, 0);
+            const totalRemaining = totalBudget - totalSpent;
+
+            document.getElementById('totalTrips').textContent = totalTrips;
+            document.getElementById('totalBudget').textContent = '$' + totalBudget.toLocaleString();
+            document.getElementById('totalRemaining').textContent = '$' + totalRemaining.toLocaleString();
+        }
+
+        function addTrip() {
+            const destination = document.getElementById('newDestination').value;
+            if (!destination) {
+                alert('Please enter a destination');
+                return;
+            }
+
+            const newTrip = {
+                id: Date.now(),
+                destination: destination,
+                type: document.getElementById('newType').value,
+                dates: document.getElementById('newDates').value,
+                budget: Number(document.getElementById('newBudget').value) || 0,
+                spent: 0,
+                hotel: document.getElementById('newHotel').value,
+                hotelCost: Number(document.getElementById('newHotelCost').value) || 0,
+                activities: document.getElementById('newActivities').value,
+                restaurants: document.getElementById('newRestaurants').value,
+                notes: document.getElementById('newNotes').value
+            };
+
+            trips.push(newTrip);
+            saveTrips();
+            renderTrips();
+
+            // Clear form
+            document.getElementById('newDestination').value = '';
+            document.getElementById('newDates').value = '';
+            document.getElementById('newBudget').value = '';
+            document.getElementById('newHotel').value = '';
+            document.getElementById('newHotelCost').value = '';
+            document.getElementById('newActivities').value = '';
+            document.getElementById('newRestaurants').value = '';
+            document.getElementById('newNotes').value = '';
+        }
+
+        function deleteTrip(id) {
+            trips = trips.filter(trip => trip.id !== id);
+            saveTrips();
+            renderTrips();
+        }
+
+        function updateTrip(id, field, value) {
+            const trip = trips.find(t => t.id === id);
+            if (trip) {
+                if (field === 'budget' || field === 'spent' || field === 'hotelCost') {
+                    trip[field] = Number(value) || 0;
+                } else {
+                    trip[field] = value;
+                }
+                saveTrips();
+                updateSummary();
+            }
+        }
+
+        function renderTrips() {
+            const container = document.getElementById('tripsList');
+            container.innerHTML = trips.map(trip => `
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <input type="text" value="${trip.destination}" 
+                                    onchange="updateTrip(${trip.id}, 'destination', this.value)"
+                                    class="text-2xl font-bold text-gray-800 border-b-2 border-transparent hover:border-gray-300 focus:border-indigo-500 focus:outline-none">
+                                <span class="px-3 py-1 rounded-full text-sm font-semibold ${trip.type === 'International' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">
+                                    ${trip.type}
+                                </span>
+                            </div>
+                            <input type="text" value="${trip.dates}" 
+                                onchange="updateTrip(${trip.id}, 'dates', this.value)"
+                                class="text-gray-600 border-b border-transparent hover:border-gray-300 focus:border-indigo-500 focus:outline-none">
+                        </div>
+                        <button onclick="deleteTrip(${trip.id})" class="text-red-600 hover:text-red-800 p-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 mb-4">
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="font-semibold text-gray-700">Budget:</span>
+                                <input type="number" value="${trip.budget}" 
+                                    onchange="updateTrip(${trip.id}, 'budget', this.value)"
+                                    class="border-b border-gray-300 focus:border-indigo-500 focus:outline-none w-24">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="font-semibold text-gray-700">Spent:</span>
+                                <input type="number" value="${trip.spent}" 
+                                    onchange="updateTrip(${trip.id}, 'spent', this.value)"
+                                    class="border-b border-gray-300 focus:border-indigo-500 focus:outline-none w-24">
+                            </div>
+                            <div class="text-sm">
+                                <span class="font-semibold text-gray-700">Remaining: </span>
+                                <span class="font-bold ${trip.budget - trip.spent >= 0 ? 'text-green-600' : 'text-red-600'}">
+                                    $${(trip.budget - trip.spent).toLocaleString()}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="flex items-start gap-2">
+                                <svg class="w-5 h-5 text-indigo-600 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                </svg>
+                                <div class="flex-1">
+                                    <input type="text" value="${trip.hotel}" 
+                                        onchange="updateTrip(${trip.id}, 'hotel', this.value)"
+                                        placeholder="Hotel name"
+                                        class="w-full border-b border-gray-300 focus:border-indigo-500 focus:outline-none mb-1">
+                                    <input type="number" value="${trip.hotelCost}" 
+                                        onchange="updateTrip(${trip.id}, 'hotelCost', this.value)"
+                                        placeholder="Cost"
+                                        class="w-24 border-b border-gray-300 focus:border-indigo-500 focus:outline-none text-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-orange-600 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <div class="flex-1">
+                                <span class="font-semibold text-gray-700 block mb-1">Things to Do:</span>
+                                <textarea onchange="updateTrip(${trip.id}, 'activities', this.value)"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                                    rows="2">${trip.activities}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-pink-600 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            <div class="flex-1">
+                                <span class="font-semibold text-gray-700 block mb-1">Restaurants:</span>
+                                <textarea onchange="updateTrip(${trip.id}, 'restaurants', this.value)"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                                    rows="2">${trip.restaurants}</textarea>
+                            </div>
+                        </div>
+
+                        ${trip.notes ? `
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+                            <textarea onchange="updateTrip(${trip.id}, 'notes', this.value)"
+                                class="w-full bg-transparent text-sm focus:outline-none"
+                                rows="2">${trip.notes}</textarea>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+            
+            updateSummary();
+        }
+
+        function exportToCSV() {
+            const headers = ['Destination', 'Type', 'Dates', 'Budget', 'Spent', 'Remaining', 'Hotel', 'Hotel Cost', 'Things to Do', 'Restaurants', 'Notes'];
+            const rows = trips.map(trip => [
+                trip.destination,
+                trip.type,
+                trip.dates,
+                trip.budget,
+                trip.spent,
+                trip.budget - trip.spent,
+                trip.hotel,
+                trip.hotelCost,
+                trip.activities,
+                trip.restaurants,
+                trip.notes
+            ]);
+            
+            const csv = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'trip_planner.csv';
+            a.click();
+        }
+
+        // Load trips on page load
+        loadTrips();
+    </script>
+</body>
+</html>
